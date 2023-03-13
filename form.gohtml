@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+<link rel="stylesheet" href="/static/style.css"/>
+<body>
+    <h1> Leave App </h1>
+    <button id="addAnnual">Add New Annual Leave</button>
+    <button id="addMedical">Add New Medical Leave</button>
+    <div class="container">
+        <div class="left">
+            <form id="form">
+                <input type="hidden" id="index" value="">
+                <br>
+                <label for="type"> Leave Type: </label>
+                <br>
+                <select id="leaveType" name="leaveType">
+                    <option selected hidden value=""></option>
+                    <option value=1>Annual Leave</option>
+                    <option value=2>Medical Leave</option>
+                </select>
+                <br>
+                <br>
+                <label for="date"> Leave Date: </label>
+                <br>
+                <input type="date" id="leaveDate" name="leaveDate" />
+                <br>
+                <br>
+                <label for="reason"> Leave Reason: </label>
+                <br>
+                <textarea id="reason" name="reason" cols="30" rows="10"></textarea>
+                <br>
+                <div id="msg"></div>
+                <button type="submit">Post</button>
+            </form>
+        </div>
+        <div class="right">
+            <h3> Database Applications here </h3>
+            <p>
+                {{range $key, $value := .Leave}}
+                    {{$value.Type}}
+                    {{$value.Date}}
+                    {{$value.Reason}}
+                    <br>
+                {{end}}
+            </p>
+            <h3>Your Pending Applications here</h3>
+            <div id="posts"></div>
+            <div id="dbmsg"></div>
+            <button id="insertToDB">Save to DB</button>
+        </div>
+    </div>
+</body>
+
+<script src="/static/database_response.js"></script>
+<script src="/static/application.js"></script>
+</html>
