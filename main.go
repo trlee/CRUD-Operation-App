@@ -72,8 +72,52 @@ func init() {
 func main() {
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	http.HandleFunc("/form", baseForm)
-	http.HandleFunc("/insert", addLeaves)
+	http.HandleFunc("/insert/", addLeaves)
+	http.HandleFunc("/leave/get/all/", getLeaves)
 	http.ListenAndServe(":8080", nil)
+}
+
+func writeJSON(w http.ResponseWriter, status int, data any) error {
+	out, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	// Set header
+	w.Header().Set("Content-Type", "application/json")
+	// Write header
+	w.WriteHeader(status)
+	_, err = w.Write(out)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func getLeaves(w http.ResponseWriter, r *http.Request) {
+	rows, err := db.Query("SELECT * FROM public.\"CRUD_Leave_App\" ORDER BY ID")
+	if err != nil {
+		log.Println(err)
+		http.Error(w, http.StatusText(500), http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	leaves := make([]Leave, 0)
+
+	for rows.Next() {
+		leave := new(Leave)
+		err := rows.Scan(&leave.ID, &leave.Type, &leave.Date, &leave.Reason, &leave.FromDB)
+		if err != nil {
+			fmt.Println(err)
+			http.Error(w, http.StatusText(500), 500)
+			return
+		}
+		leaves = append(leaves, *leave)
+	}
+
+	writeJSON(w, http.StatusAccepted, leaves)
 }
 
 func baseForm(w http.ResponseWriter, r *http.Request) {
@@ -95,11 +139,6 @@ func baseForm(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		leave := new(Leave)
 		err := rows.Scan(&leave.ID, &leave.Type, &leave.Date, &leave.Reason, &leave.FromDB)
-		if leave.Type == "1" {
-			leave.Type = "Annual Leave"
-		} else {
-			leave.Type = "Medical Leave"
-		}
 		if err != nil {
 			fmt.Println(err)
 			http.Error(w, http.StatusText(500), 500)
